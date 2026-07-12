@@ -8,6 +8,7 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.MvcResult;
 
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
@@ -208,8 +209,8 @@ class BookingFlowIntegrationTest {
                 .andExpect(status().isConflict());
     }
 
-    private Long extractId(org.springframework.test.web.servlet.ResultActions result) throws Exception {
-        String content = result.andReturn().getResponse().getContentAsString();
+    private Long extractId(MvcResult result) throws Exception {
+        String content = result.getResponse().getContentAsString();
         return objectMapper.readTree(content).get("id").asLong();
     }
 }

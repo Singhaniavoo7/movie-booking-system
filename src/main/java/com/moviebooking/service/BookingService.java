@@ -87,15 +87,15 @@ public class BookingService {
                 .map(seat -> BookingSeat.builder().booking(booking).showSeat(seat).priceAtBooking(seat.getPrice()).build())
                 .toList();
         booking.setBookingSeats(bookingSeats);
-        booking = bookingRepository.save(booking);
+        Booking savedBooking = bookingRepository.save(booking);
 
         try {
-            paymentService.charge(booking, request.getPaymentMethod(), request.isSimulatePaymentFailure());
+            paymentService.charge(savedBooking, request.getPaymentMethod(), request.isSimulatePaymentFailure());
         } catch (PaymentFailedException ex) {
-            booking.setStatus(BookingStatus.PAYMENT_FAILED);
+            savedBooking.setStatus(BookingStatus.PAYMENT_FAILED);
             releaseSeatsBackToAvailable(seats);
-            bookingRepository.save(booking);
-            log.warn("Payment failed for booking {} (user {}); seats released", booking.getBookingReference(), user.getEmail());
+            bookingRepository.save(savedBooking);
+            log.warn("Payment failed for booking {} (user {}); seats released", savedBooking.getBookingReference(), user.getEmail());
             throw ex;
         }
 
@@ -109,11 +109,11 @@ public class BookingService {
             discountCode.setUsedCount(discountCode.getUsedCount() + 1);
         }
 
-        booking.setStatus(BookingStatus.CONFIRMED);
-        booking = bookingRepository.save(booking);
+        savedBooking.setStatus(BookingStatus.CONFIRMED);
+        savedBooking = bookingRepository.save(savedBooking);
 
-        eventPublisher.publishEvent(new BookingConfirmedEvent(booking.getId()));
-        return booking;
+        eventPublisher.publishEvent(new BookingConfirmedEvent(savedBooking.getId()));
+        return savedBooking;
     }
 
     @Transactional

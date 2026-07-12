@@ -98,17 +98,20 @@ class SeatHoldConcurrencyTest {
         AtomicInteger successes = new AtomicInteger(0);
         AtomicInteger conflicts = new AtomicInteger(0);
 
-        List<Future<?>> futures = users.stream().map(user -> pool.submit(() -> {
-            try {
-                startLine.await();
-                seatHoldService.holdSeats(show.getId(), List.of(seatId), user);
-                successes.incrementAndGet();
-            } catch (SeatUnavailableException expected) {
-                conflicts.incrementAndGet();
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-            }
-        })).toList();
+        List<Future<?>> futures = new java.util.ArrayList<>();
+        for (User user : users) {
+            futures.add(pool.submit(() -> {
+                try {
+                    startLine.await();
+                    seatHoldService.holdSeats(show.getId(), List.of(seatId), user);
+                    successes.incrementAndGet();
+                } catch (SeatUnavailableException expected) {
+                    conflicts.incrementAndGet();
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                }
+            }));
+        }
 
         startLine.countDown(); // release all threads at once
         for (Future<?> f : futures) {

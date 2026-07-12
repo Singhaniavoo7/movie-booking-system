@@ -19,11 +19,11 @@ public class DiscountCode extends BaseEntity {
     private String code;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
+    @Column(name = "discount_type", nullable = false)
     private DiscountType type;
 
     /** Percentage (0-100) if type == PERCENTAGE, absolute currency amount if type == FLAT. */
-    @Column(nullable = false)
+    @Column(name = "discount_value", nullable = false)
     private BigDecimal value;
 
     private BigDecimal minBookingAmount;

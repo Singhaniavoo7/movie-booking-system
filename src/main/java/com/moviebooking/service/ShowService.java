@@ -40,13 +40,13 @@ public class ShowService {
                 .movie(movie).screen(screen).pricingTier(tier)
                 .startTime(startTime).endTime(endTime).cancelled(false)
                 .build();
-        show = showRepository.save(show);
+        Show savedShow = showRepository.save(show);
 
         // Materialize one ShowSeat per physical seat, snapshotting today's price so
         // later pricing-tier edits never retroactively change an already-scheduled show.
         List<ShowSeat> showSeats = screen.getSeatTemplates().stream()
                 .map(template -> ShowSeat.builder()
-                        .show(show)
+                        .show(savedShow)
                         .seatTemplate(template)
                         .status(ShowSeatStatus.AVAILABLE)
                         .price(resolvePrice(tier, template.getSeatType()))
